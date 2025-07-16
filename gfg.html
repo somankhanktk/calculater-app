@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Neon 3D Scientific Calculator</title>
+  <style>
+    :root {
+      --bg-color: #0d0d0d;
+      --btn-color: #111;
+      --text-color: #0ff;
+      --glow-color: #00ffffaa;
+      --accent-color: #00ffcc;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .calculator {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      box-shadow: 0 0 30px #00ffff44;
+      border: 1px solid #0ff5;
+      width: 420px;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      font-size: 24px;
+      text-align: right;
+      border: none;
+      border-radius: 10px;
+      background: #111;
+      color: var(--text-color);
+      box-shadow: inset 0 0 10px #0ff5;
+      margin-bottom: 15px;
+    }
+
+    .controls,
+    .buttons {
+      display: grid;
+      gap: 10px;
+    }
+
+    .controls {
+      grid-template-columns: 1fr 1fr 1fr;
+      margin-bottom: 10px;
+    }
+
+    .buttons {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    button, select {
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      background: var(--btn-color);
+      color: var(--text-color);
+      text-shadow: 0 0 5px #0ff;
+      box-shadow:
+        0 4px 8px #0008,
+        0 0 10px #0ff2,
+        inset 0 0 5px #0ff4;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button:hover, select:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 12px #000a,
+        0 0 15px #0ff8,
+        inset 0 0 5px #0ff8;
+    }
+
+    button:active {
+      transform: scale(0.97);
+      box-shadow:
+        0 2px 4px #000a,
+        0 0 10px #0ff6,
+        inset 0 0 8px #0ff;
+    }
+
+    .equal {
+      background: linear-gradient(145deg, #00ffaa, #00d4d4);
+      color: black;
+      text-shadow: none;
+      grid-column: span 2;
+    }
+
+    .clear {
+      background: #ff0044;
+      color: white;
+      text-shadow: 0 0 5px white;
+    }
+
+    select {
+      background: #111;
+      color: var(--text-color);
+      border: 1px solid #0ff6;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <input type="text" id="display" disabled placeholder="0" />
+    <div class="controls">
+      <button onclick="toggleAngleMode()" id="angleBtn">Deg</button>
+      <select onchange="insertConstant(this.value)">
+        <option disabled selected>Const</option>
+        <option value="Math.PI">π</option>
+        <option value="Math.E">e</option>
+        <option value="6.674e-11">G</option>
+        <option value="299792458">c</option>
+      </select>
+      <button onclick="toggleDark()">🌗</button>
+    </div>
+    <div class="buttons">
+      <button onclick="clearDisplay()" class="clear">C</button>
+      <button onclick="backspace()">⌫</button>
+      <button onclick="append('(')">(</button>
+      <button onclick="append(')')">)</button>
+      <button onclick="append('/')">÷</button>
+
+      <button onclick="append('7')">7</button>
+      <button onclick="append('8')">8</button>
+      <button onclick="append('9')">9</button>
+      <button onclick="append('*')">×</button>
+      <button onclick="append('**')">xʸ</button>
+
+      <button onclick="append('4')">4</button>
+      <button onclick="append('5')">5</button>
+      <button onclick="append('6')">6</button>
+      <button onclick="append('-')">−</button>
+      <button onclick="sqrt()">√</button>
+
+      <button onclick="append('1')">1</button>
+      <button onclick="append('2')">2</button>
+      <button onclick="append('3')">3</button>
+      <button onclick="append('+')">+</button>
+      <button onclick="square()">x²</button>
+
+      <button onclick="append('0')">0</button>
+      <button onclick="append('.')">.</button>
+      <button onclick="append('Math.sin(')">sin</button>
+      <button onclick="append('Math.cos(')">cos</button>
+      <button onclick="append('Math.tan(')">tan</button>
+
+      <button onclick="append('Math.log10(')">log</button>
+      <button onclick="append('Math.log(')">ln</button>
+      <button onclick="factorial()">x!</button>
+      <button onclick="useAns()">Ans</button>
+      <button onclick="calculate()" class="equal">=</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById("display");
+    const angleBtn = document.getElementById("angleBtn");
+
+    let angleMode = 'DEG';
+    let lastAnswer = 0;
+
+    function append(val) {
+      display.value += val;
+    }
+
+    function clearDisplay() {
+      display.value = "";
+    }
+
+    function backspace() {
+      display.value = display.value.slice(0, -1);
+    }
+
+    function square() {
+      try {
+        display.value = Math.pow(eval(display.value), 2);
+        lastAnswer = display.value;
+      } catch {
+        display.value = "Error";
+      }
+    }
+
+    function sqrt() {
+      try {
+        display.value = Math.sqrt(eval(display.value));
+        lastAnswer = display.value;
+      } catch {
+        display.value = "Error";
+      }
+    }
+
+    function factorial() {
+      try {
+        let n = eval(display.value);
+        if (n < 0 || !Number.isInteger(n)) {
+          display.value = "Error";
+          return;
+        }
+        let result = 1;
+        for (let i = 2; i <= n; i++) {
+          result *= i;
+        }
+        display.value = result;
+        lastAnswer = result;
+      } catch {
+        display.value = "Error";
+      }
+    }
+
+    function toggleAngleMode() {
+      angleMode = angleMode === 'DEG' ? 'RAD' : 'DEG';
+      angleBtn.textContent = angleMode;
+    }
+
+    function useAns() {
+      display.value += lastAnswer;
+    }
+
+    function insertConstant(val) {
+      if (val) display.value += val;
+    }
+
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+    }
+
+    function calculate() {
+      try {
+        let expr = display.value;
+
+        // Auto-close parentheses
+        const open = (expr.match(/\(/g) || []).length;
+        const close = (expr.match(/\)/g) || []).length;
+        for (let i = 0; i < open - close; i++) expr += ")";
+
+        // DEG to RAD conversion for trig
+        if (angleMode === 'DEG') {
+          expr = expr.replace(/Math\.sin\(([^)]+)\)/g, (_, val) => `Math.sin((${val}) * Math.PI / 180)`);
+          expr = expr.replace(/Math\.cos\(([^)]+)\)/g, (_, val) => `Math.cos((${val}) * Math.PI / 180)`);
+          expr = expr.replace(/Math\.tan\(([^)]+)\)/g, (_, val) => `Math.tan((${val}) * Math.PI / 180)`);
+        }
+
+        const result = eval(expr);
+        display.value = result;
+        lastAnswer = result;
+      } catch {
+        display.value = "Error";
+      }
+    }
+
+    // Keyboard Support
+    document.addEventListener("keydown", (e) => {
+      if (!isNaN(e.key) || "+-*/().".includes(e.key)) append(e.key);
+      if (e.key === "Enter") calculate();
+      if (e.key === "Backspace") backspace();
+      if (e.key === "Escape") clearDisplay();
+    });
+  </script>
+</body>
+</html>
